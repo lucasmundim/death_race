@@ -1,16 +1,25 @@
 #!/usr/bin/env ruby
-require 'rubygems' rescue nil
-$LOAD_PATH.unshift File.join(File.expand_path(__FILE__), "..", "..", "lib")
-require 'chingu'
-require 'opengl'
-require 'gosu'
-include Gosu
+begin
+  require "rubygems"
+  require "bundler"
+rescue LoadError
+  raise "Could not load the bundler gem. Install it with `gem install bundler`."
+end
 
-#require_all(File.join(ROOT, "src"))
+if Gem::Version.new(Bundler::VERSION) <= Gem::Version.new("0.9.24")
+  raise RuntimeError, "Your bundler version is too old." +
+   "Run `gem install bundler` to upgrade."
+end
 
-# module ZOrder
-#   Background, Player, UI = *0..2
-# end
+begin
+  # Set up load paths for all bundled gems
+  ENV["BUNDLE_GEMFILE"] = File.expand_path("../../Gemfile", __FILE__)
+  Bundler.setup
+  Bundler.require
+rescue Bundler::GemNotFound
+  raise RuntimeError, "Bundler couldn't find some gems." +
+    "Did you run `bundle install`?"
+end
 
 class Game < Chingu::Window
   def initialize
@@ -42,7 +51,7 @@ class Game < Chingu::Window
   
   def draw
     super
-    fill(Color.new(0xFF61442B))
+    fill(Gosu::Color.new(0xFF61442B))
   end
     
   # def update
@@ -58,7 +67,7 @@ class Track < Chingu::GameObject
   
   def initialize
     super
-    self.image = Image["track1.png"]
+    self.image = Gosu::Image["track1.png"]
     #self.viewport.lag = 0                           # 0 = no lag, 0.99 = a lot of lag.
     #self.viewport.game_area = [0, 0, 1000, 1000]    # Viewport restrictions, full "game world/map/area"
     self.zorder = 1
