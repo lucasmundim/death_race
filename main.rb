@@ -17,13 +17,21 @@ class Game < Chingu::Window
     super
     self.input = { :escape => :exit } # exits example on Escape
 
-    @player = Player.create(:x => 200, :y => 200)
+    @player = Player.create
     @player.input = { 
                       :holding_left => :move_left,
                       :holding_right => :move_right,
                       :holding_up => :accelerate,
                       :holding_down => :reverse
                     }
+    @track = Track.create
+    @track.input = { 
+                      :holding_left => :move_left,
+                      :holding_right => :move_right,
+                      :holding_up => :move_top,
+                      :holding_down => :move_down
+                    }
+    @track.player = @player
   end
   
   def update
@@ -43,8 +51,55 @@ class Game < Chingu::Window
   #   end
 end
 
+class Track < Chingu::GameObject
+  #trait :viewport
+  trait :velocity
+  attr_accessor :player
+  
+  def initialize
+    super
+    self.image = Image["track1.png"]
+    #self.viewport.lag = 0                           # 0 = no lag, 0.99 = a lot of lag.
+    #self.viewport.game_area = [0, 0, 1000, 1000]    # Viewport restrictions, full "game world/map/area"
+    self.zorder = 1
+    #self.max_velocity = [0.1, 0.1]
+  end
+  
+  def update
+    super
+    #self.viewport.center_around(player)
+  end
+  
+  def draw
+    super
+  end
+  
+  def move_left
+    #@x += 3 
+  end
+
+  def move_right
+    #@x -= 3
+  end
+  
+  # def move(x=nil, y=nil)
+  #     self.velocity_x *= 0.95
+  #     self.velocity_y *= 0.95
+  #   end
+  
+  def move_top
+    self.velocity_x -= Gosu::offset_x(self.player.angle, 0.5)
+    self.velocity_y -= Gosu::offset_y(self.player.angle, 0.5)
+  end
+  
+  def move_down
+    self.velocity_x += Gosu::offset_x(self.player.angle, 0.5)
+    self.velocity_y += Gosu::offset_y(self.player.angle, 0.5)
+  end
+end
+
 class Player < Chingu::GameObject  
-  traits :velocity
+  #traits :velocity
   trait :bounding_box, :scale => 1 #, :debug => true
   trait :animation, :delay => 200
   
@@ -60,8 +115,11 @@ class Player < Chingu::GameObject
     @animation.frame_names = { :redcar => 12..12 }
     @frame_name = :redcar
     
-    @x = @y = 100 
-    @vel_x = @vel_y = @angle = 0.0
+    #@x = @y = 100 
+    @x = 800/2
+    @y = 600/2
+    @angle = 0.0
+    self.zorder = 10
   end
   
   def update
@@ -84,23 +142,23 @@ class Player < Chingu::GameObject
   end
   
   def accelerate
-    @vel_x += Gosu::offset_x(@angle, 0.5)
-    @vel_y += Gosu::offset_y(@angle, 0.5)
+    #self.velocity_x += Gosu::offset_x(@angle, 0.5)
+    #self.velocity_y += Gosu::offset_y(@angle, 0.5)
   end
   
   def reverse
-    @vel_x -= Gosu::offset_x(@angle, 0.5)
-    @vel_y -= Gosu::offset_y(@angle, 0.5)
+    #self.velocity_x -= Gosu::offset_x(@angle, 0.5)
+    #self.velocity_y -= Gosu::offset_y(@angle, 0.5)
   end
   
   def move(x = nil, y = nil)
-    @x += @vel_x
-    @y += @vel_y
+    @x += x
+    @y += y
     @x %= 800
     @y %= 600
     
-    @vel_x *= 0.95
-    @vel_y *= 0.95
+    #self.velocity_x *= 0.95
+    #self.velocity_y *= 0.95
   end
 end
 
